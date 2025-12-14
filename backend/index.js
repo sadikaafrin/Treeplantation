@@ -17,9 +17,14 @@ const app = express();
 // middleware
 app.use(
   cors({
-    origin: [process.env.CLIENT_DOMAIN],
+    // origin: [process.env.CLIENT_DOMAIN,],
+    origin: [
+      // "http://localhost:5173",
+      process.env.CLIENT_DOMAIN,
+    ],
     credentials: true,
-    optionSuccessStatus: 200,
+    // optionsSuccessStatus: 200,
+    optionsSuccessStatus: 200,
   })
 );
 app.use(express.json());
@@ -50,7 +55,7 @@ const client = new MongoClient(process.env.MONGODB_URI, {
 });
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     const db = client.db("plantsDB");
     const userCollection = db.collection("users");
     const plantsCollection = db.collection("plants");
@@ -58,23 +63,27 @@ async function run() {
     const sellerRequestCollection = db.collection("sellerRequests");
 
     // verify admin
-    const verifyADMIN = async(req, res, next) =>{
+    const verifyADMIN = async (req, res, next) => {
       const email = req.tokenEmail;
-      const user = await userCollection.findOne({email});
-      if(user?.role !== 'admin'){
-        return res.status(403).send({message: 'Admin only Action!', role: user?.role})
+      const user = await userCollection.findOne({ email });
+      if (user?.role !== "admin") {
+        return res
+          .status(403)
+          .send({ message: "Admin only Action!", role: user?.role });
       }
       next();
-    }
+    };
     // verify seller
-    const verifySELLER = async(req, res, next) =>{
+    const verifySELLER = async (req, res, next) => {
       const email = req.tokenEmail;
-      const user = await userCollection.findOne({email});
-      if(user?.role !== 'seller'){
-        return res.status(403).send({message: 'Seller only Action!', role: user?.role})
+      const user = await userCollection.findOne({ email });
+      if (user?.role !== "seller") {
+        return res
+          .status(403)
+          .send({ message: "Seller only Action!", role: user?.role });
       }
       next();
-    }
+    };
     // save or update user data
     app.post("/user", async (req, res) => {
       const userData = req.body;
@@ -103,7 +112,7 @@ async function run() {
     });
 
     // get all user from admin
-    app.get("/users", verifyJWT,verifyADMIN, async (req, res) => {
+    app.get("/users", verifyJWT, verifyADMIN, async (req, res) => {
       const adminEmail = req.tokenEmail;
       const result = await userCollection
         .find({ email: { $ne: adminEmail } })
@@ -111,7 +120,7 @@ async function run() {
       res.send(result);
     });
     // Save plant db
-    app.post("/plants",verifyJWT, verifySELLER, async (req, res) => {
+    app.post("/plants", verifyJWT, verifySELLER, async (req, res) => {
       const plantData = req.body;
       const result = await plantsCollection.insertOne(plantData);
       res.send(result);
@@ -214,22 +223,32 @@ async function run() {
     });
 
     // seller order
-    app.get("/manage-orders/:email", verifyJWT, verifySELLER, async (req, res) => {
-      const email = req.params.email;
-      const result = await orderCollection
-        .find({ "seller.email": email })
-        .toArray();
-      res.send(result);
-    });
+    app.get(
+      "/manage-orders/:email",
+      verifyJWT,
+      verifySELLER,
+      async (req, res) => {
+        const email = req.params.email;
+        const result = await orderCollection
+          .find({ "seller.email": email })
+          .toArray();
+        res.send(result);
+      }
+    );
 
     // get all plant for seller by email
-    app.get("/my-inventory/:email",verifyJWT, verifySELLER, async (req, res) => {
-      const email = req.params.email;
-      const result = await plantsCollection
-        .find({ "seller.email": email })
-        .toArray();
-      res.send(result);
-    });
+    app.get(
+      "/my-inventory/:email",
+      verifyJWT,
+      verifySELLER,
+      async (req, res) => {
+        const email = req.params.email;
+        const result = await plantsCollection
+          .find({ "seller.email": email })
+          .toArray();
+        res.send(result);
+      }
+    );
 
     // const email = req.tokenEmail;
     // save seller request
@@ -283,7 +302,7 @@ async function run() {
     app.patch("/update-role", verifyJWT, verifyADMIN, async (req, res) => {
       const { id, email, role } = req.body;
       try {
-        // CASE 1: Seller request approval 
+        // CASE 1: Seller request approval
         if (id) {
           const existingRequest = await sellerRequestCollection.findOne({
             _id: new ObjectId(id),
@@ -335,13 +354,13 @@ async function run() {
     });
 
     // get user role
-    app.get("/user/role/", verifyJWT, async (req, res) => {
+    app.get("/user/role", verifyJWT, async (req, res) => {
       const result = await userCollection.findOne({ email: req.tokenEmail });
       res.send({ role: result?.role });
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
@@ -352,7 +371,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Hello from Server..");
+  res.send("Hello from Server22222..");
 });
 
 app.listen(port, () => {

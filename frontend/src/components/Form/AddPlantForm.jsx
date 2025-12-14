@@ -7,9 +7,11 @@ import LoadingSpinner from "../Shared/LoadingSpinner";
 import ErrorPage from "../../pages/ErrorPage";
 import toast from "react-hot-toast";
 import { TbFidgetSpinner } from "react-icons/tb";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 const AddPlantForm = () => {
   const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
   const {
     isPending,
     isError,
@@ -17,7 +19,7 @@ const AddPlantForm = () => {
     reset: mutationReset,
   } = useMutation({
     mutationFn: async (payLoad) =>
-      await axios.post(`${import.meta.env.VITE_API_URL}/plants`, payLoad),
+      await axiosSecure.post(`/plants`, payLoad),
     onSuccess: (data) => {
       console.log(data);
       // toaster

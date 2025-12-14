@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "email-password-auth-c4d19",
+    "prod": "email-password-auth-c4d19"
+  },
+  "targets": {},
+  "etags": {}
+}
